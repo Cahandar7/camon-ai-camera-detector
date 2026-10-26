@@ -12,7 +12,8 @@ On first start an initial admin account is created so the dashboard is usable at
 
 Forgotten password: /forgot emails a one-time link (30 min) to /?reset=<token>; the
 page sets a new password without the old one — the link itself proves who it is.
-Signed-in users change their password with the current one (/change-password).
+Signed-in users change their password with the current one (/change-password), and
+change their email or delete their account (PATCH / DELETE /me), also with the password.
 """
 
 from __future__ import annotations
@@ -31,7 +32,7 @@ from datetime import datetime, timezone
 from http.cookies import SimpleCookie
 
 from fastapi import APIRouter, BackgroundTasks, HTTPException, Request, Response
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from starlette.responses import JSONResponse
 
 from . import mailer
@@ -47,6 +48,7 @@ PUBLIC_PATHS = {"/api/auth/login", "/api/auth/forgot", "/api/auth/reset", "/api/
 ROLES = ("admin", "user")
 RESET_TTL = 30 * 60
 MIN_PASSWORD = 8
+EMAIL_PATTERN = r"^[^@\s]+@[^@\s]+\.[^@\s]+$"
 
 # scrypt: memory-hard, in the standard library, no extra dependency
 _SCRYPT = {"n": 2**14, "r": 8, "p": 1, "dklen": 32}
@@ -226,12 +228,38 @@ class UserStore:
         return True
 
     def change_password(self, user_id: int, current: str, new: str, keep_token: str | None) -> bool:
-        with self._lock:
-            row = self._db.execute("SELECT password_hash FROM users WHERE id = ?", (user_id,)).fetchone()
-        if row is None or not verify_password(current, row["password_hash"]):
+        if not self.check_password(user_id, current):
             return False
         self._replace_password(user_id, new, keep_token)
         return True
+
+    def check_password(self, user_id: int, password: str) -> bool:
+        with self._lock:
+            row = self._db.execute("SELECT password_hash FROM users WHERE id = ?", (user_id,)).fetchone()
+        return row is not None and verify_password(password, row["password_hash"])
+
+    def change_email(self, user_id: int, email: str) -> dict:
+        """Raises sqlite3.IntegrityError if another account already uses the email.
+        Reset links sent to the old address stop working."""
+        with self._lock, self._db:
+            self._db.execute(
+                "UPDATE users SET email = ?, updated_at = ? WHERE id = ?", (email.strip().lower(), _now_iso(), user_id)
+            )
+            self._db.execute("DELETE FROM password_resets WHERE user_id = ?", (user_id,))
+            row = self._db.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
+        return self.public(row)
+
+    def is_last_admin(self, user_id: int) -> bool:
+        with self._lock:
+            row = self._db.execute(
+                "SELECT role = 'admin' AND (SELECT COUNT(*) FROM users WHERE role = 'admin') = 1 FROM users WHERE id = ?",
+                (user_id,),
+            ).fetchone()
+        return bool(row and row[0])
+
+    def delete_id(self, user_id: int) -> None:
+        with self._lock, self._db:  # sessions and reset links go with it (ON DELETE CASCADE)
+            self._db.execute("DELETE FROM users WHERE id = ?", (user_id,))
 
     def _replace_password(self, user_id: int, new_password: str, keep_token: str | None = None) -> None:
         """New password; every other session and every reset link of the user stops working."""
@@ -411,8 +439,52 @@ def change_password(body: ChangeIn, request: Request):
     _check_rate(ip)
     token = request.cookies.get(SESSION_COOKIE)
     if not users.change_password(request.state.user["id"], body.current_password, body.new_password, token):
-        _failures.setdefault(ip, deque()).append(time.monotonic())
-        raise HTTPException(403, "The current password is wrong")
+        _wrong_password(ip)
+
+
+def _confirm_password(request: Request, password: str) -> int:
+    """Sensitive account changes need the current password; wrong guesses count
+    towards the same limit as failed logins."""
+    ip = request.client.host if request.client else "?"
+    _check_rate(ip)
+    user_id = request.state.user["id"]
+    if not users.check_password(user_id, password):
+        _wrong_password(ip)
+    return user_id
+
+
+def _wrong_password(ip: str):
+    _failures.setdefault(ip, deque()).append(time.monotonic())
+    raise HTTPException(403, "The current password is wrong")
+
+
+class EmailIn(BaseModel):
+    model_config = ConfigDict(str_strip_whitespace=True)
+
+    email: str = Field(min_length=3, max_length=200, pattern=EMAIL_PATTERN)
+    current_password: str = Field(min_length=1, max_length=200)
+
+
+@router.patch("/me")
+def change_email(body: EmailIn, request: Request):
+    user_id = _confirm_password(request, body.current_password)
+    try:
+        return users.change_email(user_id, body.email)
+    except sqlite3.IntegrityError:
+        raise HTTPException(409, "This email is already used by another account")
+
+
+class DeleteIn(BaseModel):
+    current_password: str = Field(min_length=1, max_length=200)
+
+
+@router.delete("/me", status_code=204)
+def delete_account(body: DeleteIn, request: Request, response: Response):
+    user_id = _confirm_password(request, body.current_password)
+    if users.is_last_admin(user_id):
+        raise HTTPException(409, "The only administrator can't delete their account")
+    users.delete_id(user_id)
+    response.delete_cookie(SESSION_COOKIE, path="/")
 
 
 # --- command line ------------------------------------------------------------------------

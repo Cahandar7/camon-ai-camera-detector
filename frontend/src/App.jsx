@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import AccountPage from './components/AccountPage'
 import AlarmOverlay from './components/AlarmOverlay'
 import AlertsFeed from './components/AlertsFeed'
 import CameraModal from './components/CameraModal'
@@ -10,21 +11,21 @@ import Insights from './components/Insights'
 import Lightbox from './components/Lightbox'
 import LitterList from './components/LitterList'
 import LiveView from './components/LiveView'
-import ChangePasswordModal from './components/ChangePasswordModal'
 import LoginPage from './components/LoginPage'
 import Overview from './components/Overview'
 import ResetPasswordPage from './components/ResetPasswordPage'
-import SettingsModal from './components/SettingsModal'
 import Sidebar from './components/Sidebar'
 import Toasts from './components/Toasts'
 import { useCameraFeed } from './hooks/useCameraFeed'
 import { useEvents } from './hooks/useEvents'
+import { clearHashPage, useHashPage } from './hooks/useHashPage'
 import { useStoredState } from './hooks/useStoredState'
 import { useI18n } from './i18n/core'
 import { UNAUTHORIZED, api } from './lib/api'
 import { playAlert, unlockAudio } from './lib/sound'
 
 const ALARM_MS = { critical: 9000, warning: 1600 }
+const ACCOUNT_PAGES = ['profile', 'settings'] // tabs of the account page, addressed as #profile / #settings
 
 /** Login gate: the dashboard (and its sockets) only exist for a signed-in user.
  * A password-reset link (/?reset=<token>) opens the reset page instead. */
@@ -64,6 +65,7 @@ export default function App() {
   return (
     <Dashboard
       user={user}
+      onUserChange={setUser}
       onLogout={async () => {
         await api.logout().catch(() => {})
         setUser(null)
@@ -72,7 +74,7 @@ export default function App() {
   )
 }
 
-function Dashboard({ user, onLogout }) {
+function Dashboard({ user, onUserChange, onLogout }) {
   const { t } = useI18n()
   const [health, setHealth] = useState(null)
   const [cameras, setCameras] = useState([])
@@ -85,6 +87,7 @@ function Dashboard({ user, onLogout }) {
   const [snapshot, setSnapshot] = useState(null)
   const [selectedId, setSelectedId] = useStoredState('camon.camera', null)
   const [view, setView] = useStoredState('camon.view', 'live')
+  const [page, goPage] = useHashPage(ACCOUNT_PAGES)
   const [sound, setSound] = useStoredState('camon.sound', true)
   const soundRef = useRef(sound)
   useEffect(() => {
@@ -150,9 +153,14 @@ function Dashboard({ user, onLogout }) {
   const live = cameras.map((c) => ({ ...c, ...summaries[c.id] }))
   const current = live.find((c) => c.id === selectedId) ?? live[0]
 
+  const showView = (next) => {
+    setView(next)
+    goPage(null)
+  }
+
   const openCamera = (id) => {
     setSelectedId(id)
-    setView('live')
+    showView('live')
   }
 
   const saveCamera = async (data) => {
@@ -176,8 +184,18 @@ function Dashboard({ user, onLogout }) {
     setAlerts([])
   }
 
+  const saveSettings = async (form) => {
+    const saved = await api.saveSettings(form)
+    setSettings(saved)
+    return saved
+  }
+
+  const signOut = () => {
+    clearHashPage()
+    onLogout()
+  }
+
   const testAlarm = () => {
-    setModal(null)
     raiseAlarm(
       {
         severity: 'critical',
@@ -191,7 +209,27 @@ function Dashboard({ user, onLogout }) {
   }
 
   let content
-  if (!loaded) {
+  if (page) {
+    content = (
+      <AccountPage
+        tab={page}
+        onTab={goPage}
+        onBack={() => goPage(null)}
+        user={user}
+        onUserChange={onUserChange}
+        onSignOut={signOut}
+        onDeleted={() => {
+          clearHashPage()
+          onUserChange(null)
+        }}
+        settings={settings}
+        sound={sound}
+        onSound={setSound}
+        onSave={saveSettings}
+        onTestAlarm={testAlarm}
+      />
+    )
+  } else if (!loaded) {
     content = (
       <main className="splash">
         <div className="spinner" />
@@ -229,32 +267,20 @@ function Dashboard({ user, onLogout }) {
   return (
     <div className="app">
       <Header
-        view={view}
-        onView={setView}
-        health={health}
+        view={page ? null : view}
+        onView={showView}
         connected={connected}
         sound={sound}
         onToggleSound={() => setSound((s) => !s)}
-        onSettings={() => setModal({ type: 'settings' })}
         showNav={cameras.length > 0}
         user={user}
-        onLogout={onLogout}
-        onChangePassword={() => setModal({ type: 'password' })}
+        onOpenAccount={goPage}
+        onSignOut={signOut}
       />
       {content}
 
       {modal?.type === 'camera' && (
         <CameraModal camera={modal.camera} count={cameras.length} onSave={saveCamera} onClose={() => setModal(null)} />
-      )}
-      {modal?.type === 'settings' && settings && (
-        <SettingsModal
-          settings={settings}
-          health={health}
-          onSave={async (form) => setSettings(await api.saveSettings(form))}
-          onClearAlerts={clearAlerts}
-          onTestAlarm={testAlarm}
-          onClose={() => setModal(null)}
-        />
       )}
       {modal?.type === 'delete' && (
         <ConfirmModal
@@ -265,7 +291,6 @@ function Dashboard({ user, onLogout }) {
           onClose={() => setModal(null)}
         />
       )}
-      {modal?.type === 'password' && <ChangePasswordModal onClose={() => setModal(null)} />}
       {snapshot && <Lightbox alert={snapshot} onClose={() => setSnapshot(null)} />}
       <AlarmOverlay
         alarm={alarm}

@@ -280,6 +280,12 @@
   background: rgba(255, 255, 255, 0.05);
 }
 
+.menu-separator {
+  height: 1px;
+  margin: 6px 10px;
+  background: var(--border);
+}
+
 .menu-item.danger:hover {
   color: var(--danger);
   background: rgba(255, 82, 102, 0.08);

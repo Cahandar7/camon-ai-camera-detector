@@ -33,6 +33,8 @@ export const api = {
   resetPassword: (token, password) => request('/api/auth/reset', { method: 'POST', body: { token, new_password: password } }),
   changePassword: (current, password) =>
     request('/api/auth/change-password', { method: 'POST', body: { current_password: current, new_password: password } }),
+  updateEmail: (email, current) => request('/api/auth/me', { method: 'PATCH', body: { email, current_password: current } }),
+  deleteAccount: (current) => request('/api/auth/me', { method: 'DELETE', body: { current_password: current } }),
   health: () => request('/api/health'),
   cameras: () => request('/api/cameras'),
   addCamera: (body) => request('/api/cameras', { method: 'POST', body }),

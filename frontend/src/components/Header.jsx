@@ -15,18 +15,34 @@ function Clock() {
   return <span className="header-clock">{t.time(now)}</span>
 }
 
+/** Shown only while the backend connection is lost (after a short grace period on page load). */
+function OfflineChip({ connected }) {
+  const { t } = useI18n()
+  const [down, setDown] = useState(false)
+  useEffect(() => {
+    if (connected) return undefined
+    const timer = setTimeout(() => setDown(true), 2000)
+    return () => clearTimeout(timer)
+  }, [connected])
+  if (connected || !down) return null
+  return (
+    <div className="sys-chip is-down" role="status">
+      <span className="dot" />
+      <span>{t('backendOffline')}</span>
+    </div>
+  )
+}
+
 export default function Header({
   view,
   onView,
-  health,
   connected,
   sound,
   onToggleSound,
-  onSettings,
   showNav,
   user,
-  onLogout,
-  onChangePassword,
+  onOpenAccount,
+  onSignOut,
 }) {
   const { t } = useI18n()
   return (
@@ -48,28 +64,13 @@ export default function Header({
       )}
 
       <div className="header-right">
-        <div className={`sys-chip ${connected ? '' : 'is-down'}`} title={health ? `${health.device}` : ''}>
-          <span className="dot" />
-          {connected && health ? (
-            <>
-              <Icon name="sparkles" size={14} />
-              <b>{health.model}</b>
-              <span className="sys-sep" />
-              <span className="sys-runtime">{health.runtime}</span>
-            </>
-          ) : (
-            <span>{connected ? t('connecting') : t('backendOffline')}</span>
-          )}
-        </div>
+        <OfflineChip connected={connected} />
         <Clock />
         <LangSwitch />
         <button className="icon-btn" onClick={onToggleSound} title={sound ? t('soundOff') : t('soundOn')}>
           <Icon name={sound ? 'volume' : 'volumeOff'} />
         </button>
-        <button className="icon-btn" onClick={onSettings} title={t('settings')}>
-          <Icon name="gear" />
-        </button>
-        <UserMenu user={user} onLogout={onLogout} onChangePassword={onChangePassword} />
+        <UserMenu user={user} onOpen={onOpenAccount} onSignOut={onSignOut} />
       </div>
     </header>
   )

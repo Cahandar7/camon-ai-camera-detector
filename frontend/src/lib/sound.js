@@ -7,6 +7,8 @@ const ALERT_AUDIO = {
   tr: '/sounds/garbage-detected-tr.mp3',
 }
 const COOLDOWN = { critical: 15000, warning: 1500, info: 1500 }
+const CLIP_REPEATS = 2 // each file holds the phrase once: "Litter detected. Litter detected."
+const CLIP_GAP = 0.32 // seconds of silence between the repeats
 
 let ctx = null
 let master = null
@@ -79,10 +81,12 @@ function playClip(lang) {
     if (!clip) {
       return
     }
-    const source = ctx.createBufferSource()
-    source.buffer = clip
-    source.connect(master)
-    source.start(start + 0.27)
+    for (let i = 0; i < CLIP_REPEATS; i++) {
+      const source = ctx.createBufferSource()
+      source.buffer = clip
+      source.connect(master)
+      source.start(start + 0.27 + i * (clip.duration + CLIP_GAP))
+    }
   }
   if (clips[code]) play()
   else loadClip(code).then(play)

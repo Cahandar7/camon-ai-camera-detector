@@ -95,7 +95,9 @@ export default function LoginPage({ onLogin, initialMode = 'login' }) {
   if (mode === 'forgot') {
     return (
       <AuthLayout>
-        <form className="login-form" onSubmit={requestReset}>
+        {/* separate keys: otherwise React reuses the clicked link button as the new
+            form's submit button mid-click, and the browser submits the empty form */}
+        <form key="forgot" className="login-form" onSubmit={requestReset}>
           <h2>{t('forgotTitle')}</h2>
           <p className="login-sub">{t('forgotSub')}</p>
           {emailField}
@@ -119,7 +121,7 @@ export default function LoginPage({ onLogin, initialMode = 'login' }) {
 
   return (
     <AuthLayout>
-      <form className="login-form" onSubmit={login}>
+      <form key="login" className="login-form" onSubmit={login}>
         <h2>{t('loginTitle')}</h2>
         <p className="login-sub">{t('loginSub')}</p>
         {emailField}

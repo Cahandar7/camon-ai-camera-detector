@@ -1,19 +1,18 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <defs>
-    <linearGradient id="g" x1="6" y1="6" x2="58" y2="58" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#5CF6BE"/>
-      <stop offset="0.55" stop-color="#1FD1B2"/>
-      <stop offset="1" stop-color="#3BB8F5"/>
-    </linearGradient>
-    <radialGradient id="i" cx="0.42" cy="0.4" r="0.65">
-      <stop offset="0" stop-color="#8BFAD2"/>
-      <stop offset="1" stop-color="#14B8A6"/>
-    </radialGradient>
-  </defs>
-  <rect x="1" y="1" width="62" height="62" rx="17" fill="#0C141C" stroke="url(#g)" stroke-opacity="0.4" stroke-width="1.5"/>
-  <path d="M11 21v-6a4 4 0 0 1 4-4h6M43 11h6a4 4 0 0 1 4 4v6M53 43v6a4 4 0 0 1-4 4h-6M21 53h-6a4 4 0 0 1-4-4v-6" fill="none" stroke="url(#g)" stroke-width="3.6" stroke-linecap="round"/>
-  <circle cx="32" cy="33" r="11" fill="none" stroke="url(#g)" stroke-width="3.4"/>
-  <circle cx="32" cy="33" r="5" fill="url(#i)"/>
-  <circle cx="29.7" cy="30.7" r="1.4" fill="#fff" opacity="0.9"/>
-  <path d="M44.5 14.2l1.6 3.7 3.7 1.6-3.7 1.6-1.6 3.7-1.6-3.7-3.7-1.6 3.7-1.6z" fill="#fff"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="CamOn camera with a neural lens">
+  <path d="M10 19h9l4-6h18l4 6h9a5 5 0 0 1 5 5v23a5 5 0 0 1-5 5H10a5 5 0 0 1-5-5V24a5 5 0 0 1 5-5Z" fill="#061E1C" stroke="#40DBA5" stroke-width="3.2" stroke-linejoin="round"/>
+  <circle cx="31" cy="35" r="14" fill="none" stroke="#B8F08D" stroke-width="2.1"/>
+  <g fill="none" stroke="#B8F08D" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M25 29 34 27 41 34 39 42 27 43 22 37Z"/>
+    <path d="M25 29 31 35 34 27M41 34 31 35 22 37M31 35 27 43M31 35 39 42"/>
+  </g>
+  <g fill="#40DBA5">
+    <circle cx="25" cy="29" r="1.65"/>
+    <circle cx="34" cy="27" r="1.65"/>
+    <circle cx="41" cy="34" r="1.65"/>
+    <circle cx="22" cy="37" r="1.65"/>
+    <circle cx="31" cy="35" r="2"/>
+    <circle cx="39" cy="42" r="1.65"/>
+    <circle cx="27" cy="43" r="1.65"/>
+  </g>
+  <circle cx="49.5" cy="25.5" r="2.8" fill="#F05F69"/>
 </svg>

@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { useI18n } from '../i18n/core'
 import Icon from './Icon'
 
-/** Avatar button in the header with the signed-in account and a sign-out action. */
-export default function UserMenu({ user, onLogout, onChangePassword }) {
+/** Avatar button in the header: account pages and sign out. */
+export default function UserMenu({ user, onOpen, onSignOut }) {
   const { t } = useI18n()
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
@@ -40,18 +40,34 @@ export default function UserMenu({ user, onLogout, onChangePassword }) {
               <span className={`role-badge role-${user.role}`}>{t(`role_${user.role}`)}</span>
             </span>
           </div>
+          {[
+            ['profile', 'user', t('profile')],
+            ['settings', 'sliders', t('settings')],
+          ].map(([page, icon, label]) => (
+            <button
+              key={page}
+              className="menu-item"
+              role="menuitem"
+              onClick={() => {
+                setOpen(false)
+                onOpen(page)
+              }}
+            >
+              <Icon name={icon} size={16} /> <span>{label}</span>
+              <Icon name="chevronDown" size={14} className="menu-chevron" />
+            </button>
+          ))}
+          <div className="menu-separator" role="separator" />
           <button
-            className="menu-item"
+            type="button"
+            className="menu-item danger"
             role="menuitem"
             onClick={() => {
               setOpen(false)
-              onChangePassword()
+              onSignOut()
             }}
           >
-            <Icon name="lock" size={16} /> {t('changePassword')}
-          </button>
-          <button className="menu-item danger" role="menuitem" onClick={onLogout}>
-            <Icon name="logOut" size={16} /> {t('signOut')}
+            <Icon name="logOut" size={16} /> <span>{t('signOut')}</span>
           </button>
         </div>
       )}

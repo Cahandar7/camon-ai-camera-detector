@@ -8,6 +8,8 @@ export const LANGS = [
   { code: 'tr', label: 'TURK', name: 'Türkçe', locale: 'tr-TR' },
 ]
 
+const AZ_MONTHS = ['yanvar', 'fevral', 'mart', 'aprel', 'may', 'iyun', 'iyul', 'avqust', 'sentyabr', 'oktyabr', 'noyabr', 'dekabr']
+
 export const I18nContext = createContext(null)
 export const useI18n = () => useContext(I18nContext)
 
@@ -43,6 +45,12 @@ export function makeT(lang) {
     return new Date(ts * 1000).toLocaleDateString(t.locale)
   }
   t.time = (date) => date.toLocaleTimeString(t.locale, { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+  t.date = (iso) => {
+    const d = new Date(iso)
+    // Browsers ship no Azerbaijani month names (they print "2026 M10 26"), so spell them out
+    if (lang === 'az') return `${d.getDate()} ${AZ_MONTHS[d.getMonth()]} ${d.getFullYear()}`
+    return d.toLocaleDateString(t.locale, { day: 'numeric', month: 'long', year: 'numeric' })
+  }
   return t
 }
 

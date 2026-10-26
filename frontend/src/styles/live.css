@@ -41,6 +41,7 @@
 /* --- video stage ------------------------------------------------------------------- */
 
 .stage {
+  container: stage / inline-size;
   position: relative;
   aspect-ratio: 16 / 9;
   width: 100%;
@@ -118,6 +119,26 @@
 .hud-tr {
   top: 14px;
   right: 14px;
+}
+
+/* narrow video (phones): the zone warning gets its own row under LIVE instead of
+   sliding under the FPS chips */
+@container stage (max-width: 620px) {
+  .hud-tl {
+    right: 14px;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .hud-tl .alert-pill {
+    max-width: 100%;
+    height: auto;
+    min-height: 28px;
+    padding-block: 5px;
+    white-space: normal;
+  }
+  .hud-bl .hud-pill:not(.mono) {
+    display: none; /* model name — leaves room for the view buttons */
+  }
 }
 
 .hud-bl {

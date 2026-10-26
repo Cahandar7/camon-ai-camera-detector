@@ -9,7 +9,7 @@ here, from tracked detections over time:
 * an item whose centre sits inside a person's box (upper body) is treated as
   carried, not littered — a person walking with a bottle is not pollution;
 * pollution index P = Σ weight(category) over confirmed items, and
-  cleanliness = 100 · e^(−P / K): one bottle ≈ 85 %, three ≈ 61 %, six ≈ 38 %;
+  cleanliness = 100 · e^(−P / K): one bottle ≈ 85 %, three ≈ 61 %, six ≈ 37 %;
 * the score is smoothed (EMA) so the gauge moves calmly instead of flickering.
 """
 

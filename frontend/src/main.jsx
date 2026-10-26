@@ -10,6 +10,7 @@ import './styles/overview.css'
 import './styles/modal.css'
 import './styles/login.css'
 import './styles/effects.css'
+import './styles/account.css'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
