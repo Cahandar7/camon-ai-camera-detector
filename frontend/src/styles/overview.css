@@ -1,0 +1,172 @@
+.overview {
+  flex: 1;
+  padding: 24px 20px 32px;
+  max-width: 1600px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.overview-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+.overview-head h1 {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.overview-head p {
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.zones-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.zones-summary .tile-value {
+  font-size: 24px;
+}
+
+.overview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.tile-cam {
+  --tone: var(--border);
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  border-radius: 18px;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  transition:
+    transform 0.2s,
+    border-color 0.2s,
+    box-shadow 0.2s;
+  animation: fade-up 0.35s ease;
+}
+
+.tile-cam:hover {
+  transform: translateY(-3px);
+  border-color: var(--border-strong);
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.4);
+}
+
+.tile-cam.level-dirty {
+  border-color: rgba(255, 181, 71, 0.45);
+}
+
+.tile-cam.level-critical {
+  border-color: rgba(255, 82, 102, 0.6);
+}
+
+.tile-cam-media {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background: #030405;
+}
+
+.tile-cam-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.tile-cam-media .status-pill {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: rgba(6, 8, 12, 0.65);
+  backdrop-filter: blur(8px);
+}
+
+.tile-cam-off {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+}
+
+.tile-cam-alert {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #241500;
+  background: rgba(255, 181, 71, 0.95);
+}
+
+.tile-cam-alert.critical {
+  color: #fff;
+  background: rgba(255, 59, 82, 0.95);
+}
+
+.tile-cam-body {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px 6px;
+}
+
+.tile-cam-name {
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.tile-cam-zone {
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+.tile-cam-score {
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+.tile-cam-score small {
+  font-size: 15px;
+  margin-left: 1px;
+}
+
+.tile-cam-stats {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 6px 16px 14px;
+  font-size: 12.5px;
+  color: var(--text-2);
+}
+
+.tile-cam-stats span {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.tile-cam-level {
+  margin-left: auto;
+  font-weight: 700;
+}

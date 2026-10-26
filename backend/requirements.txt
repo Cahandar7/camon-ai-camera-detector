@@ -1,0 +1,11 @@
+# Install CPU PyTorch first (avoids ~3 GB of CUDA libraries):
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cpu
+# With an NVIDIA GPU use the default PyPI wheels and set CAMON_RUNTIME=torch.
+ultralytics>=8.4.180
+openvino>=2025.3
+nncf>=2.17
+fastapi>=0.115
+uvicorn[standard]>=0.30
+pydantic-settings>=2.4
+opencv-python>=4.10
+lap>=0.5.12

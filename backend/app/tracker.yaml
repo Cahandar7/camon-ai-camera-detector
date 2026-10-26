@@ -1,0 +1,9 @@
+# ByteTrack tuned for CamOn: litter is static and often hidden for a moment by
+# passers-by, so lost tracks are kept longer (track_buffer ≈ 4 s at 15 AI-fps).
+tracker_type: bytetrack
+track_high_thresh: 0.2
+track_low_thresh: 0.1
+new_track_thresh: 0.2
+track_buffer: 60
+match_thresh: 0.8
+fuse_score: True
